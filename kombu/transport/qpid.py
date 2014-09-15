@@ -1214,15 +1214,23 @@ class Connection(object):
         self.channels = []
         self._callbacks = {}
         establish = qpid.messaging.Connection.establish
-        try:
-            self._qpid_conn = establish(**self.connection_options)
-        except ConnectionError as conn_exc:
-            coded_as_auth_failure = getattr(conn_exc, 'code', None) == 320
-            contains_auth_fail_text = 'Authentication failed' in conn_exc.text
-            if coded_as_auth_failure or contains_auth_fail_text:
-                exc = sys.exc_info()
-                raise AuthenticationFailure, exc[1], exc[2]  # flake8: noqa
-            raise
+        for sasl_mech in sasl_mechanisms:
+            try:
+                logger.info("attempting to connect to qpid with SASL mechanism %s" % sasl_mech)
+                self._qpid_conn = establish(**self.connection_options)
+            except ConnectionError as conn_exc:
+                coded_as_auth_failure = getattr(conn_exc, 'code', None) == 320
+                contains_auth_fail_text = 'Authentication failed' in conn_exc.text
+                if coded_as_auth_failure or contains_auth_fail_text:
+                    logger.info("unable to connect to qpid with SASL mechanism %s" % sasl_mech)
+                    continue
+                raise
+
+        if not self._qpid_conn:
+            exc = sys.exc_info()
+            logger.error("Unable to authenticate to qpid using the following mechanisms: %s" %
+                         sasl_mechanisms)
+            raise AuthenticationFailure, exc[1], exc[2] # flake8: noqa
 
     def get_qpid_connection(self):
         """Return the existing connection (singleton).
