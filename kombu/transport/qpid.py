@@ -1607,6 +1607,6 @@ class Transport(base.Transport):
         :return: A dict containing the default parameters.
         :rtype: dict
         """
-        return {'userid': 'guest', 'password': 'guest',
+        return {'userid': 'guest', 'password': None,
                 'port': self.default_port, 'virtual_host': '',
                 'hostname': 'localhost', 'sasl_mechanisms': 'PLAIN ANONYMOUS'}
