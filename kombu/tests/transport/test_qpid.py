@@ -278,7 +278,7 @@ class ConnectionTestBase(Case):
         self.connection_options = {'host': 'localhost',
                                    'port': 5672,
                                    'username': 'guest',
-                                   'password': 'guest',
+                                   'password': None,
                                    'transport': 'tcp',
                                    'timeout': 10,
                                    'sasl_mechanisms': 'PLAIN'}
@@ -1525,7 +1525,7 @@ class TestTransportEstablishConnection(Case):
                                                sasl_mechanisms='PLAIN',
                                                host='127.0.0.1',
                                                timeout=4,
-                                               password='guest',
+                                               password=None,
                                                port=5672,
                                                transport='tcp')
 
@@ -1535,7 +1535,7 @@ class TestTransportEstablishConnection(Case):
                                                sasl_mechanisms='PLAIN',
                                                host='127.0.0.1',
                                                timeout=4,
-                                               password='guest',
+                                               password=None,
                                                port=5672,
                                                transport='tcp')
 
@@ -1548,7 +1548,7 @@ class TestTransportEstablishConnection(Case):
                                                host='127.0.0.1',
                                                timeout=4,
                                                new_param=new_param_value,
-                                               password='guest',
+                                               password=None,
                                                port=5672,
                                                transport='tcp')
 
@@ -1559,7 +1559,18 @@ class TestTransportEstablishConnection(Case):
                                                sasl_mechanisms='PLAIN',
                                                host='127.0.0.1',
                                                timeout=4,
-                                               password='guest',
+                                               password=None,
+                                               port=5672,
+                                               transport='tcp')
+
+    def test_transport_establish_conn_set_password(self):
+        self.client.password = 'somepass'
+        self.transport.establish_connection()
+        self.mock_conn.assert_called_once_with(username='guest',
+                                               sasl_mechanisms='PLAIN ANONYMOUS',
+                                               host='127.0.0.1',
+                                               timeout=4,
+                                               password='somepass',
                                                port=5672,
                                                transport='tcp')
 
@@ -1570,7 +1581,7 @@ class TestTransportEstablishConnection(Case):
                                                sasl_mechanisms='PLAIN',
                                                host='127.0.0.1',
                                                timeout=4,
-                                               password='guest',
+                                               password=None,
                                                port=5672,
                                                transport='tcp')
 
@@ -1588,7 +1599,7 @@ class TestTransportEstablishConnection(Case):
                                                sasl_mechanisms='PLAIN',
                                                host='127.0.0.1',
                                                ssl_keyfile='my_keyfile',
-                                               password='guest',
+                                               password=None,
                                                port=5672, transport='ssl')
 
     def test_transport_establish_conn_with_ssl_skip_hostname_check(self):
@@ -1605,7 +1616,7 @@ class TestTransportEstablishConnection(Case):
                                                sasl_mechanisms='PLAIN',
                                                host='127.0.0.1',
                                                ssl_keyfile='my_keyfile',
-                                               password='guest',
+                                               password=None,
                                                port=5672, transport='ssl')
 
     def test_transport_establish_conn_sets_client_on_connection_object(self):
@@ -1642,7 +1653,7 @@ class TestTransportEstablishConnection(Case):
         self.mock_conn.assert_called_once_with(username='guest',
                                                sasl_mechanisms='PLAIN',
                                                host='some_other_hostname',
-                                               timeout=4, password='guest',
+                                               timeout=4, password=None,
                                                port=5672, transport='tcp')
 
 
@@ -1747,7 +1758,7 @@ class TestTransport(ExtraAssertionsMixin, Case):
 
     def test_default_connection_params(self):
         """Test that the default_connection_params are correct"""
-        correct_params = {'userid': 'guest', 'password': 'guest',
+        correct_params = {'userid': 'guest', 'password': None,
                           'port': 5672, 'virtual_host': '',
                           'hostname': 'localhost',
                           'sasl_mechanisms': 'PLAIN'}

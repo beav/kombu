@@ -24,6 +24,10 @@
 # code that also uses this module.
 #############################################################################
 
+from __future__ import absolute_import
+
+import os
+
 
 # Imports for Monkey Patch 1
 try:
