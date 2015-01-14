@@ -350,6 +350,32 @@ class TestConnectionInit(ExtraAssertionsMixin, ConnectionTestBase):
     @patch(QPID_MODULE + '.ConnectionError', new=(MockException, ))
     @patch(QPID_MODULE + '.sys.exc_info')
     @patch(QPID_MODULE + '.qpid')
+    def test_connection__init__mutates_ConnError_by_message2(self, mock_qpid,
+                                                            mock_exc_info):
+        """
+        Test for PLAIN connection via python-saslwrapper, sans cyrus-sasl-plain
+
+        This test is specific for what is returned when we attempt to connect
+        with PLAIN mech and python-saslwrapper is installed, but cyrus-sasl-plain is
+        not installed.
+        """
+        my_conn_error = MockException()
+        my_conn_error.text = 'Error in sasl_client_start (-4) SASL(-4): no mechanism available'
+        mock_qpid.messaging.Connection.establish.side_effect = my_conn_error
+        mock_exc_info.return_value = ('a', 'b', None)
+        try:
+            self.conn = Connection(**self.connection_options)
+        except AuthenticationFailure as error:
+            exc_info = sys.exc_info()
+            self.assertTrue(not isinstance(error, MockException))
+            self.assertTrue(exc_info[1] is 'b')
+            self.assertTrue(exc_info[2] is None)
+        else:
+            self.fail('ConnectionError type was not mutated correctly')
+
+    @patch(QPID_MODULE + '.ConnectionError', new=(MockException, ))
+    @patch(QPID_MODULE + '.sys.exc_info')
+    @patch(QPID_MODULE + '.qpid')
     def test_connection__init__mutates_ConnError_by_code(self, mock_qpid,
                                                          mock_exc_info):
         my_conn_error = MockException()

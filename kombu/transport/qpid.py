@@ -1243,7 +1243,7 @@ class Connection(object):
         # behavior since it will select the first suitable mech. Unsuitable
         # mechs will be rejected by the server.
 
-        sasl_mechanisms = [x for x in connection_options['sasl_mechanisms'].split() \
+        sasl_mechanisms = [x for x in connection_options['sasl_mechanisms'].split()
                            if x != self.SASL_ANONYMOUS_MECH]
         if self.SASL_ANONYMOUS_MECH in connection_options['sasl_mechanisms'].split():
             sasl_mechanisms.append(self.SASL_ANONYMOUS_MECH)
@@ -1258,11 +1258,16 @@ class Connection(object):
                 logger.info("Connected to qpid with SASL mechanism %s" % sasl_mech)
                 break
             except ConnectionError as conn_exc:
+                # if we get one of these errors, do not raise an exception.
+                # Raising will cause the connection to be retried. Instead,
+                # just continue on to the next mech.
                 coded_as_auth_failure = getattr(conn_exc, 'code', None) == 320
                 contains_auth_fail_text = 'Authentication failed' in conn_exc.text
                 contains_mech_fail_text = 'sasl negotiation failed: no mechanism agreed'\
                                           in conn_exc.text
-                if coded_as_auth_failure or contains_auth_fail_text or contains_mech_fail_text:
+                contains_mech_unavail_text = 'no mechanism available' in conn_exc.text
+                if coded_as_auth_failure or contains_auth_fail_text or contains_mech_fail_text or \
+                   contains_mech_unavail_text:
                     logger.debug("Unable to connect to qpid with SASL mechanism %s" % sasl_mech)
                     continue
                 raise
